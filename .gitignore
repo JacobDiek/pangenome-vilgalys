@@ -1,0 +1,13 @@
+# macOS clutter
+.DS_Store
+
+# data (lives on Sapelo2, not in git)
+*.fq
+*.fastq
+*.fa
+*.fasta
+*.gz
+*.paf
+*.gfa
+*.gbz
+*.hal
