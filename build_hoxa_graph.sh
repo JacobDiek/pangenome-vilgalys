@@ -25,8 +25,6 @@ CORES=${SLURM_CPUS_PER_TASK:-8}
 MEM_MB=${SLURM_MEM_PER_NODE:-32768}
 MAXMEM="$(( MEM_MB * 9 / 10 ))M"    # 90% of the job's memory, leaving room for Toil's own overhead
 
-# Remove a previous run's jobstore and output
-rm -rf "${JOBSTOREPATH:?}" "${OUTPUT:?}"
 
 # ---- Step 1: clean copies of the region FASTAs, with simple ">HOXA" headers
 mkdir -p "$HOXA"
@@ -41,6 +39,9 @@ echo "PTR.1" "$HOXA/HOXA_ptr_pri.fa" >> "$SEQFILE"
 # ---- Step 3: build the graph with Minigraph-Cactus (official container)
 # Check to see if cactus_v2.9.9.sif container exists
 [[ -s "$SIF" ]] || { echo "ERROR: container not found: $SIF" >&2; exit 1; }
+
+# Remove a previous run's jobstore and output
+rm -rf "${JOBSTOREPATH:?}" "${OUTPUT:?}"
 
 apptainer exec "$SIF" cactus-pangenome "$JOBSTOREPATH" "$SEQFILE" --outDir "$OUTPUT" --outName HOXA_pri \
   --reference CHM13 --gfa --gbz --vcf --giraffe clip \
