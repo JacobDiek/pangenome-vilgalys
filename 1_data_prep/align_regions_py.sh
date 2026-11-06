@@ -34,7 +34,7 @@ for hap in ptr_pri ptr_alt; do
 done
 
 # ---- 3-4. Parse alignments and extract chimp regions (Python)
-python3 "$APES/scripts/parse_paf.py" \
+python3 "$APES/scripts/1_data_prep/parse_paf.py" \
   --paf-dir "$ALN" --asm-dir "$APES/assemblies" --out-dir "$APES/regions" \
   --haps ptr_pri ptr_alt --flank 100000 --min-mapq 20
 
