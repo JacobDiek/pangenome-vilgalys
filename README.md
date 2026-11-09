@@ -14,3 +14,6 @@ linear references (bwa) with a Minigraph-Cactus pangenome (vg giraffe).
 | | `parse_paf.py` | Parse PAF, pick best chimp locus per region, extract chimp FASTAs |
 | `2_graphs/` | `build_hoxa_graph.sh` | Minigraph-Cactus (`cactus-pangenome`, container) graph of HOXA: CHM13 + PTR.1 |
 | `archive/` | | Superseded scripts: awk PAF parser, FASTA+VCF builder, Mac/Docker Graphviz renderer (`visualize_pangenome.sh`, template for a future container-based viz script), Part 1 LCT scripts in `archive/lct/` |
+
+## Reference docs
+- [`docs/FILE_TYPES.md`](docs/FILE_TYPES.md): every file type the pipeline makes or reads so far (FASTA to the final graph), with real examples, which program makes each, and how to look inside it.
