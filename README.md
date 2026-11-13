@@ -13,6 +13,7 @@ linear references (bwa) with a Minigraph-Cactus pangenome (vg giraffe).
 | | `align_regions_py.sh` | minimap2 human regions -> chimp, then calls `parse_paf.py` |
 | | `parse_paf.py` | Parse PAF, pick best chimp locus per region, extract chimp FASTAs |
 | `2_graphs/` | `build_hoxa_graph.sh` | Minigraph-Cactus (`cactus-pangenome`, container) graph of HOXA: CHM13 + PTR.1 |
+| `3_mapping/` | `map_hoxa_reads.sh` | Simulate reads from held-out PTR.2, map with giraffe (graph) and bwa (CHM13, PTR.1), summarize mapping rate and MAPQ |
 | `archive/` | | Superseded scripts: awk PAF parser, FASTA+VCF builder, Mac/Docker Graphviz renderer (`visualize_pangenome.sh`, template for a future container-based viz script), Part 1 LCT scripts in `archive/lct/` |
 
 ## Reference docs
