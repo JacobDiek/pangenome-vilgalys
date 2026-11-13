@@ -1,0 +1,8 @@
+# Study regions: one per line, tab-separated.
+# region	anchor_genes (comma-separated)	note
+# Each region spans from the leftmost to the rightmost anchor gene in CHM13,
+# plus FLANK (config.sh) on both sides. Add a line here to add a region.
+GYP	GYPA,GYPB,GYPE	glycophorin cluster (segmental duplications)
+HOXA	HOXA1,HOXA13	whole HOXA cluster (easy control)
+LCT	MCM6,LCT	LCT gene + MCM6, which holds the lactase enhancer
+MHC	MOG,COL11A2	classical MHC boundaries (class I through class II)

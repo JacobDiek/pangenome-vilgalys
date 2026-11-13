@@ -12,7 +12,7 @@
 
 set -euo pipefail
 
-APES=/home/jad33864/pangenome/apes
+source /home/jad33864/pangenome/apes/scripts/config.sh   # APES, REGIONS_TSV, FLANK
 ALN=$APES/regions/alignments
 THREADS=${SLURM_CPUS_PER_TASK:-8}
 mkdir -p "$ALN"
@@ -20,9 +20,10 @@ mkdir -p "$ALN"
 module purge
 module load minimap2/2.29-GCCcore-13.3.0 SAMtools/1.23.1-GCC-13.3.0 Python/3.12.3-GCCcore-13.3.0
 
-# ---- 1. Combine the four human regions into one query file, named by region
+# ---- 1. Combine the human regions into one query file, named by region
 > "$ALN/query.fa"
-for name in GYP HOXA LCT MHC; do
+# region names come from regions.tsv (first column, skipping '#' comment lines)
+for name in $(awk -F'\t' '!/^#/ && NF {print $1}' "$REGIONS_TSV"); do
   awk -v n="$name" '/^>/ {print ">" n; next} {print}' "$APES/regions/${name}_chm13.fa" >> "$ALN/query.fa"
 done
 
@@ -36,6 +37,6 @@ done
 # ---- 3-4. Parse alignments and extract chimp regions (Python)
 python3 "$APES/scripts/1_data_prep/parse_paf.py" \
   --paf-dir "$ALN" --asm-dir "$APES/assemblies" --out-dir "$APES/regions" \
-  --haps ptr_pri ptr_alt --flank 100000 --min-mapq 20
+  --haps ptr_pri ptr_alt --flank "$FLANK" --min-mapq 20
 
 echo "[$(date)] done"
