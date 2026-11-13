@@ -6,10 +6,6 @@ annotation (GFF3), span from the leftmost gene start to the rightmost gene end,
 add FLANK bp on both sides, and write one BED line (0-based, end-exclusive)
 using the GenBank chromosome names (CP...) that the FASTA uses.
 
-Python rewrite of steps 2-4 of the old define_regions.sh. Standard library only.
-The bash wrapper (define_regions.sh) still does the download and the
-samtools extraction.
-
 Usage:
   python3 define_regions.py --gff chm13.gff --fai chm13.fa.fai \\
       --regions regions.tsv --flank 100000 \\
@@ -78,7 +74,9 @@ def read_gff(gff_path, genes_out):
             elif ftype == "gene":
                 out.write(line)
                 # attributes look like: ID=gene-HOXA1;Dbxref=...;Name=HOXA1;...
-                attrs = dict(kv.split("=", 1) for kv in attributes.split(";") if "=" in kv)
+                attrs = dict(
+                    kv.split("=", 1) for kv in attributes.split(";") if "=" in kv
+                )
                 name = attrs.get("Name")
                 if name:
                     genes[name].append((chrom, int(start), int(end)))
@@ -105,7 +103,9 @@ def match_names(refseq_lengths, fai_path):
     for nc, length in refseq_lengths.items():
         matches = by_length.get(length, [])
         if len(matches) > 1:
-            die(f"{nc} ({length} bp) matches several FASTA sequences by length: {matches}")
+            die(
+                f"{nc} ({length} bp) matches several FASTA sequences by length: {matches}"
+            )
         if matches:
             nc_to_cp[nc] = matches[0]
     return nc_to_cp, genbank_lengths
@@ -123,8 +123,10 @@ def find_anchors(regions, genes, strict):
                 listing = "; ".join(f"{c}:{s}-{e}" for c, s, e in entries)
                 if strict:
                     die(f"gene {gene} has {len(entries)} entries: {listing}")
-                print(f"WARNING: gene {gene} has {len(entries)} entries, using the first: {listing}",
-                      file=sys.stderr)
+                print(
+                    f"WARNING: gene {gene} has {len(entries)} entries, using the first: {listing}",
+                    file=sys.stderr,
+                )
             hits.append((region, gene, *entries[0]))
     return hits
 
@@ -142,7 +144,9 @@ def build_bed(hits, nc_to_cp, genbank_lengths, flank):
     for region, anchors in by_region.items():
         chroms = {chrom for _, chrom, _, _ in anchors}
         if len(chroms) > 1:
-            die(f"anchor genes for {region} are on different chromosomes: {sorted(chroms)}")
+            die(
+                f"anchor genes for {region} are on different chromosomes: {sorted(chroms)}"
+            )
         nc = chroms.pop()
         if nc not in nc_to_cp:
             die(f"no FASTA chromosome matches {nc} (needed for {region})")
@@ -150,22 +154,41 @@ def build_bed(hits, nc_to_cp, genbank_lengths, flank):
         lo = min(start for _, _, start, _ in anchors)
         hi = max(end for _, _, _, end in anchors)
         bed_start = max(lo - 1 - flank, 0)
-        bed_end = min(hi + flank, genbank_lengths[cp])    # never past the chromosome end
+        bed_end = min(hi + flank, genbank_lengths[cp])  # never past the chromosome end
         rows.append((cp, bed_start, bed_end, region))
-    rows.sort(key=lambda r: r[3])                         # by region name, like the old version
+    rows.sort(key=lambda r: r[3])  # by region name, like the old version
     return rows
 
 
 def main():
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--gff", required=True, type=Path, help="CHM13 RefSeq annotation (GFF3)")
-    p.add_argument("--fai", required=True, type=Path, help="chm13.fa.fai (GenBank names and lengths)")
+    p = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    p.add_argument(
+        "--gff", required=True, type=Path, help="CHM13 RefSeq annotation (GFF3)"
+    )
+    p.add_argument(
+        "--fai",
+        required=True,
+        type=Path,
+        help="chm13.fa.fai (GenBank names and lengths)",
+    )
     p.add_argument("--regions", required=True, type=Path, help="regions.tsv")
-    p.add_argument("--flank", type=int, default=100000, help="bp added on each side (default 100000)")
-    p.add_argument("--annot-dir", required=True, type=Path, help="where the annotation tables go")
+    p.add_argument(
+        "--flank",
+        type=int,
+        default=100000,
+        help="bp added on each side (default 100000)",
+    )
+    p.add_argument(
+        "--annot-dir", required=True, type=Path, help="where the annotation tables go"
+    )
     p.add_argument("--out-bed", required=True, type=Path, help="output BED file")
-    p.add_argument("--strict", action="store_true",
-                   help="stop if an anchor gene has several entries, instead of using the first")
+    p.add_argument(
+        "--strict",
+        action="store_true",
+        help="stop if an anchor gene has several entries, instead of using the first",
+    )
     args = p.parse_args()
 
     args.annot_dir.mkdir(parents=True, exist_ok=True)
@@ -176,13 +199,11 @@ def main():
     # 24 for CHM13: the RefSeq annotation has no row for the mitochondrion (CP068254.1)
     print(f"matched {len(nc_to_cp)} chromosome names (expect 24: 22 autosomes + X + Y)")
     with open(args.annot_dir / "nc_to_cp.tsv", "w") as out:
-        for nc, cp in nc_to_cp.items():
-            out.write(f"{nc}\t{cp}\n")
+        out.writelines(f"{nc}\t{cp}\n" for nc, cp in nc_to_cp.items())
 
     hits = find_anchors(regions, genes, args.strict)
     with open(args.annot_dir / "gene_hits.tsv", "w") as out:
-        for row in hits:
-            out.write("\t".join(map(str, row)) + "\n")
+        out.writelines("\t".join(map(str, row)) + "\n" for row in hits)
     print("anchor genes (region, gene, RefSeq chrom, start, end):")
     for row in hits:
         print("  " + "\t".join(map(str, row)))
