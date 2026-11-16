@@ -20,6 +20,7 @@ Study regions are listed in `regions.tsv` (region name + anchor genes); add a li
 | | `align_regions_py.sh` | minimap2 human regions -> chimp (regions from `regions.tsv`), then calls `parse_paf.py` |
 | | `parse_paf.py` | Parse PAF, pick best chimp locus per region, extract chimp FASTAs |
 | `2_graphs/` | `build_graph.sh REGION DIR` | Minigraph-Cactus graph (CHM13 + in-graph chimp) + Giraffe zipcode index |
+| | `index_ape_pangenome.sh` | Great ape pangenome: list reference paths + rebuild the Giraffe zipcode index |
 | | `index_linear_refs.sh REGION DIR` | CHM13 and in-graph chimp region FASTAs for bwa, + `bwa index` |
 | `3_mapping/` | `simulate_reads.sh REGION DIR [COV]` | Simulate short reads from the held-out chimp haplotype (`vg sim`) |
 | | `map_reads.sh REGION DIR [COV]` | giraffe (graph, surjected to CHM13) + bwa (CHM13, in-graph chimp); mapping-rate and MAPQ summary |
