@@ -14,8 +14,9 @@ Study regions are listed in `regions.tsv` (region name + anchor genes); add a li
 
 | Folder | Script | Does |
 |---|---|---|
-| `1_data_prep/` | `download_pilot.sh` | Download CHM13 + chimp mPanTro3 (pri/alt) from NCBI, `samtools faidx` |
-| | `define_regions.sh` + `define_regions.py` | Anchor genes from `regions.tsv` -> CHM13 annotation -> BED -> extract human regions (bash runs the tools, Python does the parsing) |
+| `0_download/` | `download_assemblies.sh` | Download CHM13 + chimp mPanTro3 (pri/alt) from NCBI, `samtools faidx` |
+| | `download_ape_pangenome.sh` | Download the UCSC 10-way T2T great ape pangenome (GBZ + distance index + reference files, ~12 GB) |
+| `1_data_prep/` | `define_regions.sh` + `define_regions.py` | Anchor genes from `regions.tsv` -> CHM13 annotation -> BED -> extract human regions (bash runs the tools, Python does the parsing) |
 | | `align_regions_py.sh` | minimap2 human regions -> chimp (regions from `regions.tsv`), then calls `parse_paf.py` |
 | | `parse_paf.py` | Parse PAF, pick best chimp locus per region, extract chimp FASTAs |
 | `2_graphs/` | `build_graph.sh REGION DIR` | Minigraph-Cactus graph (CHM13 + in-graph chimp) + Giraffe zipcode index |
@@ -34,5 +35,16 @@ sbatch 3_mapping/simulate_reads.sh HOXA pri 30
 sbatch 3_mapping/map_reads.sh HOXA pri 30     # after the three above finish
 ```
 
+The first three steps only read the region FASTAs, so they can run at the same time; `map_reads.sh` needs all three of their outputs. Submit them one at a time, or let Slurm hold the mapping job until the others finish:
+
+```bash
+G=$(sbatch --parsable 2_graphs/build_graph.sh HOXA alt)
+R=$(sbatch --parsable 2_graphs/index_linear_refs.sh HOXA alt)
+S=$(sbatch --parsable 3_mapping/simulate_reads.sh HOXA alt 30)
+sbatch --dependency=afterok:$G:$R:$S 3_mapping/map_reads.sh HOXA alt 30
+```
+
+`--parsable` makes `sbatch` print just the job ID; `afterok` starts the mapping job only after all three finish successfully. Results land in `apes/results/{REGION}_{DIR}/cov{COV}_s42/summary.tsv`.
+
 ## Reference docs
-- [`docs/FILE_TYPES.md`](docs/FILE_TYPES.md): every file type the pipeline makes or reads so far (FASTA to the final graph), with real examples, which program makes each, and how to look inside it.
+- [`docs/FILE_TYPES.md`](docs/FILE_TYPES.md): every file type the pipeline makes or reads, from the input FASTAs to the mapping summary, with a flowchart, real examples, which program makes each file, and how to look inside it.

@@ -1,4 +1,4 @@
-# config.sh: settings shared by the pipeline scripts (1_data_prep/, 2_graphs/, 3_mapping/).
+# config.sh: settings shared by the pipeline scripts (0_download/, 1_data_prep/, 2_graphs/, 3_mapping/).
 # Not run on its own. Each script loads it with:
 #   source /home/jad33864/pangenome/apes/scripts/config.sh
 # (A full path, because sbatch runs a COPY of the script from Slurm's own folder,
@@ -13,6 +13,12 @@ REGIONS_DIR=$APES/regions            # {REGION}_{chm13,ptr_pri,ptr_alt}.fa from 
 # ---------- Study regions ----------
 REGIONS_TSV=$APES/scripts/regions.tsv   # region name + anchor genes; add a line to add a region
 FLANK=100000                            # bp added on each side of a region's anchor genes
+
+# ---------- Great ape pangenome (0_download/download_ape_pangenome.sh) ----------
+# UCSC 10-way T2T ape Minigraph-Cactus graph; README at $GAPG_URL/$GAPG_NAME.README.md
+GAPG_NAME=10-t2t-apes-mc-2023v2
+GAPG_URL=https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/$GAPG_NAME
+GAPG_DIR=$APES/great_ape_pg             # ~12 GB downloaded (+ ~40 GB once the zipcode index is rebuilt)
 
 # Cluster modules for bwa and samtools (vg comes from the container instead)
 MAP_MODULES="BWA/0.7.18-GCCcore-13.3.0 SAMtools/1.23.1-GCC-13.3.0"

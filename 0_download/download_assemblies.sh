@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=dl_pilot
+#SBATCH --job-name=dl_assemblies
 #SBATCH --partition=batch
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -8,12 +8,15 @@
 #SBATCH --output=/home/jad33864/pangenome/apes/logs/%x_%j.out
 #SBATCH --error=/home/jad33864/pangenome/apes/logs/%x_%j.err
 
-# Pilot download: human T2T-CHM13 + both chimpanzee (mPanTro3) haplotypes.
+# Download the linear assemblies: human T2T-CHM13 + both chimpanzee (mPanTro3) haplotypes.
 # Versions pinned to the ones used in Yoo et al. 2025 for reproducibility.
+#
+# Usage:  sbatch 0_download/download_assemblies.sh
 
 set -euo pipefail   # stop on any error, unset variable, or failed pipe step
+source /home/jad33864/pangenome/apes/scripts/config.sh
 
-OUTDIR=/home/jad33864/pangenome/apes/assemblies
+OUTDIR=$APES/assemblies
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
