@@ -20,8 +20,8 @@ GAPG_NAME=10-t2t-apes-mc-2023v2
 GAPG_URL=https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/$GAPG_NAME
 GAPG_DIR=$APES/great_ape_pg             # ~12 GB downloaded (+ ~40 GB once the zipcode index is rebuilt)
 GAPG_GBZ=$GAPG_DIR/$GAPG_NAME.gbz       # graph + haplotypes (downloaded)
-GAPG_DIST=$GAPG_DIR/$GAPG_NAME.dist     # distance index (downloaded)
-GAPG_ZIDX=$GAPG_DIR/giraffe_idx         # zipcode minimizer index (2_graphs/index_ape_pangenome.sh)
+GAPG_ZIDX=$GAPG_DIR/giraffe_idx         # indexes rebuilt with our vg (2_graphs/index_ape_pangenome.sh)
+GAPG_DIST=$GAPG_ZIDX/$GAPG_NAME.dist    # distance index, rebuilt: the downloaded 2024 .dist crashes vg 1.66
 GAPG_ZMIN=$GAPG_ZIDX/$GAPG_NAME.withzip.min
 GAPG_ZIP=$GAPG_ZIDX/$GAPG_NAME.zipcodes
 
