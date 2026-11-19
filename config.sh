@@ -16,14 +16,17 @@ FLANK=100000                            # bp added on each side of a region's an
 
 # ---------- Great ape pangenome (0_download/download_ape_pangenome.sh) ----------
 # UCSC 10-way T2T ape Minigraph-Cactus graph; README at $GAPG_URL/$GAPG_NAME.README.md
+# Used with the vg from Cactus v2.7.1 (vg_old below), the version that built its
+# indexes: vg 1.66 segfaults on the downloaded .dist, and rebuilding the distance
+# index needs over 1 TB of memory (UCSC README; our 200 GB and 480 GB runs failed).
 GAPG_NAME=10-t2t-apes-mc-2023v2
 GAPG_URL=https://cgl.gi.ucsc.edu/data/cactus/t2t-apes/$GAPG_NAME
-GAPG_DIR=$APES/great_ape_pg             # ~12 GB downloaded (+ ~40 GB once the zipcode index is rebuilt)
-GAPG_GBZ=$GAPG_DIR/$GAPG_NAME.gbz       # graph + haplotypes (downloaded)
-GAPG_ZIDX=$GAPG_DIR/giraffe_idx         # indexes rebuilt with our vg (2_graphs/index_ape_pangenome.sh)
-GAPG_DIST=$GAPG_ZIDX/$GAPG_NAME.dist    # distance index, rebuilt: the downloaded 2024 .dist crashes vg 1.66
-GAPG_ZMIN=$GAPG_ZIDX/$GAPG_NAME.withzip.min
-GAPG_ZIP=$GAPG_ZIDX/$GAPG_NAME.zipcodes
+GAPG_DIR=$APES/great_ape_pg             # ~49 GB downloaded
+GAPG_GBZ=$GAPG_DIR/$GAPG_NAME.gbz       # graph + haplotypes
+GAPG_MIN=$GAPG_DIR/$GAPG_NAME.min       # minimizer index (no zipcodes; fine for vg_old's giraffe)
+GAPG_DIST=$GAPG_DIR/$GAPG_NAME.dist     # distance index
+SIF_OLD=$PANGENOME/containers/cactus_v2.7.1.sif
+SIF_OLD_URL=docker://quay.io/comparative-genomics-toolkit/cactus:v2.7.1
 
 # Cluster modules for bwa and samtools (vg comes from the container instead)
 MAP_MODULES="BWA/0.7.18-GCCcore-13.3.0 SAMtools/1.23.1-GCC-13.3.0"
@@ -42,6 +45,8 @@ DEFAULT_COVERAGE=30
 # Run vg inside the Cactus container: the same vg that builds the graph indexes.
 # --cleanenv keeps loaded modules' settings from leaking into the container.
 vg() { apptainer exec --cleanenv "$SIF" vg "$@"; }
+# The vg from Cactus v2.7.1: use it for everything touching the great ape pangenome.
+vg_old() { apptainer exec --cleanenv "$SIF_OLD" vg "$@"; }
 
 # Stop with a clear message if any listed file is missing or empty.
 need() {

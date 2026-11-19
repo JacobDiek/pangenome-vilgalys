@@ -3,7 +3,7 @@
 #SBATCH --partition=batch
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=4G
+#SBATCH --mem=8G
 #SBATCH --time=12:00:00
 #SBATCH --output=/home/jad33864/pangenome/apes/logs/%x_%j.out
 #SBATCH --error=/home/jad33864/pangenome/apes/logs/%x_%j.err
@@ -11,8 +11,8 @@
 # Download the UCSC 10-way T2T great ape pangenome (Minigraph-Cactus, Cactus v2.7.1):
 #   hs1 (CHM13), hg38, HG002 (2 haplotypes), chimp mPanTro3 (2), bonobo mPanPan1 (2),
 #   gorilla mGorGor1 (2). Orangutans are in a separate graph.
-# Only the files Giraffe needs are downloaded (~12 GB). Skipped on purpose:
-#   .min      37 GB, built before zipcodes existed: rebuild it with vg minimizer instead
+# Downloads the files Giraffe needs (~49 GB) and the Cactus v2.7.1 container whose vg
+# built them (vg_old in config.sh). Skipped on purpose:
 #   full.*    og 54 GB, xg 31 GB: Giraffe uses the default (clip) graph
 #   MAF/HAL   whole-genome alignments (HAL 13 GB): not needed for mapping
 #
@@ -37,6 +37,7 @@ FILES=(
   # Giraffe inputs (default clip graph)
   "$GAPG_NAME.gbz"            # 7.4 GB: graph + haplotype paths
   "$GAPG_NAME.dist"           # 3.7 GB: distance index
+  "$GAPG_NAME.min"            # 37 GB: minimizer index
   # Optional: uncomment when needed
   # "$GAPG_NAME.hapl"         # 2.9 GB: haplotype-sampling index (giraffe --haplotype-name)
   # "$GAPG_NAME.vcf.gz"       # 1.9 GB: graph variants against hs1
@@ -60,6 +61,14 @@ for f in "${FILES[@]}"; do
     wget -c -nv "$GAPG_URL/$f"
     check_size "$f"
 done
+
+# Container with the vg that built these indexes (apptainer runs on compute nodes only)
+if [[ ! -s "$SIF_OLD" ]]; then
+    echo "[$(date)] pulling $SIF_OLD_URL"
+    apptainer pull "$SIF_OLD" "$SIF_OLD_URL"
+fi
+echo "vg in $SIF_OLD:"
+vg_old version | head -1
 
 # Unpack the stats and print what the graph contains, for the log
 mkdir -p stats
